@@ -34,6 +34,34 @@ import natsutil "github.com/41north/go-nats"
 
 ## Quick Start
 
+The following utilities will be of interest:
+
+- [Subject Builder](#subject-builder)
+- [Generic Key Value Store](#generic-key-value-store)
+
+### Subject Builder
+
+A builder much like `strings.Builder` which helps with constructing valid subject names and ensures invalid characters
+are not used:
+
+```go
+sb := natsutil.SubjectBuilder{}
+
+sb.Add("foo", "bar", "baz")
+sb.Star()
+
+// outputs 'foo.bar.baz.*'
+subject := sb.String()
+
+sb.Add("hello")
+sb.Chevron()
+
+// outputs 'foo.bar.baz.*.hello.>'
+subject = sb.String()
+```
+
+### Generic Key Value Store
+
 A generic interface for interacting with JetStream Key-Value stores can be created with the following:
 
 ```go
