@@ -14,8 +14,8 @@ type KeyWatcher[T any] interface {
 }
 
 type kw[T any] struct {
-	// codec defines how to decode update values into type T.
-	codec Codec[T]
+	// encoder defines how to decode update values into type T.
+	encoder nats.Encoder
 	// delegate is the underlying nats.KeyWatcher returned from the nats library.
 	delegate nats.KeyWatcher
 }
@@ -46,7 +46,7 @@ func (k *kw[T]) UpdatesUnmarshalled() <-chan KeyValueEntry[T] {
 			var entry KeyValueEntry[T]
 			// TODO why do we seem to get an initial nil entry when a key doesn't exist yet?
 			if delegate != nil {
-				entry = &kve[T]{delegate: delegate, codec: k.codec}
+				entry = &kve[T]{delegate: delegate, encoder: k.encoder}
 			}
 			ch <- entry
 		}
@@ -55,6 +55,6 @@ func (k *kw[T]) UpdatesUnmarshalled() <-chan KeyValueEntry[T] {
 	return ch
 }
 
-func NewKeyWatcher[T any](watcher nats.KeyWatcher, codec Codec[T]) KeyWatcher[T] {
-	return &kw[T]{delegate: watcher, codec: codec}
+func NewKeyWatcher[T any](watcher nats.KeyWatcher, encoder nats.Encoder) KeyWatcher[T] {
+	return &kw[T]{delegate: watcher, encoder: encoder}
 }

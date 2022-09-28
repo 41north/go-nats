@@ -54,8 +54,8 @@ kv, err := js.KeyValue("my-bucket")
 ...
 
 // create a generic KeyValue interface that uses JSON encoding
-codec := natsutil.JsonCodec[testPayload]{}  // note: codec is safe to use concurrently
-kvT = natsutil.NewKeyValue[testPayload](kv, codec)
+encoder := builtin.JsonEncoder{}
+kvT = natsutil.NewKeyValue[testPayload](kv, &codec)
 
 // put a testPayload object
 kvT.Put("foo", testPayload{1})

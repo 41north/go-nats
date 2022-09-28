@@ -3,10 +3,14 @@ package natsutil
 import (
 	"testing"
 
+	"github.com/nats-io/nats.go/encoders/builtin"
+
 	"github.com/nats-io/nats.go"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var encoder = builtin.JsonEncoder{}
 
 func TestNewKeyValue(t *testing.T) {
 	s := runBasicJetStreamServer(t)
@@ -14,10 +18,11 @@ func TestNewKeyValue(t *testing.T) {
 
 	_, js := jsClient(t, s)
 	bucket := createTestBucket(t, js)
-	kv := NewKeyValue[string](bucket, stringJsonCodec)
+
+	kv := NewKeyValue[string](bucket, &encoder)
 
 	assert.Equal(t, bucket.Bucket(), kv.Bucket())
-	assert.Equal(t, stringJsonCodec, kv.Codec())
+	assert.Equal(t, &encoder, kv.Encoder())
 }
 
 func TestKv_Put(t *testing.T) {
@@ -25,7 +30,7 @@ func TestKv_Put(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[testPayload](createTestBucket(t, js), testPayloadJsonCodec)
+	kv := NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
 
 	// insert some values
 	revision, err := kv.Put("foo", testPayload{1})
@@ -73,7 +78,7 @@ func TestKv_Create(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[testPayload](createTestBucket(t, js), testPayloadJsonCodec)
+	kv := NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
 
 	// create a value
 	revision, err := kv.Create("foo", testPayload{1})
@@ -90,7 +95,7 @@ func TestKv_Update(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[testPayload](createTestBucket(t, js), testPayloadJsonCodec)
+	kv := NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
 
 	// create a value
 	revision, err := kv.Create("foo", testPayload{1})
@@ -115,7 +120,7 @@ func TestKv_GetRevisionAndHistory(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[testPayload](createTestBucket(t, js), testPayloadJsonCodec)
+	kv := NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
 
 	// create some versions for a given key
 	revision, err := kv.Put("foo", testPayload{1})
@@ -169,7 +174,7 @@ func TestKv_Watch(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[testPayload](createTestBucket(t, js), testPayloadJsonCodec)
+	kv := NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
 
 	// create a watch on a specific key
 	w, err := kv.Watch("foo")
@@ -235,7 +240,7 @@ func TestKv_WatchAll(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[testPayload](createTestBucket(t, js), testPayloadJsonCodec)
+	kv := NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
 
 	// create a watch on a specific key
 	w, err := kv.WatchAll()

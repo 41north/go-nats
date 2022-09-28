@@ -3,6 +3,8 @@ package natsutil
 import (
 	"testing"
 
+	"github.com/nats-io/nats.go/encoders/builtin"
+
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,7 +15,9 @@ func TestKve(t *testing.T) {
 
 	_, js := jsClient(t, s)
 	bucket := createTestBucket(t, js)
-	kv := NewKeyValue[testPayload](bucket, testPayloadJsonCodec)
+	encoder := builtin.JsonEncoder{}
+
+	kv := NewKeyValue[testPayload](bucket, &encoder)
 
 	revision, err := kv.Put("foo", testPayload{123})
 	assert.Nil(t, err)
