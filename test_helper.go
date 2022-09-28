@@ -58,13 +58,6 @@ func shutdownJSServerAndRemoveStorage(t *testing.T, s *server.Server) {
 	s.WaitForShutdown()
 }
 
-func createKeyValue(t *testing.T, js nats.JetStreamContext, config *nats.KeyValueConfig) nats.KeyValue {
-	t.Helper()
-	kv, err := js.CreateKeyValue(config)
-	assert.Nil(t, err, "failed to create kv store")
-	return kv
-}
-
 func createTestBucket(t *testing.T, js nats.JetStreamContext) nats.KeyValue {
 	t.Helper()
 	kv, err := js.CreateKeyValue(&nats.KeyValueConfig{

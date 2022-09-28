@@ -13,9 +13,11 @@ func TestNewKeyValue(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[string](createTestBucket(t, js), stringJsonCodec)
+	bucket := createTestBucket(t, js)
+	kv := NewKeyValue[string](bucket, stringJsonCodec)
 
-	assert.Equal(t, "TestBucket", kv.Bucket())
+	assert.Equal(t, bucket.Bucket(), kv.Bucket())
+	assert.Equal(t, stringJsonCodec, kv.Codec())
 }
 
 func TestKv_Put(t *testing.T) {
@@ -238,6 +240,10 @@ func TestKv_WatchAll(t *testing.T) {
 	// create a watch on a specific key
 	w, err := kv.WatchAll()
 	assert.Nil(t, err)
+
+	// we didn't construct the watcher with a context
+	// TODO test with a configured context
+	assert.Nil(t, w.Context())
 
 	// get the update channel
 	ch := w.UpdatesUnmarshalled()
