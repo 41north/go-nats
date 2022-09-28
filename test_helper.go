@@ -16,6 +16,10 @@ const (
 	_EMPTY_ = ""
 )
 
+type testPayload struct {
+	Value int `json:""`
+}
+
 func runBasicJetStreamServer(t *testing.T) *server.Server {
 	t.Helper()
 	opts := test.DefaultTestOptions

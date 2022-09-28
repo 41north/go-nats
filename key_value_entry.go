@@ -17,8 +17,8 @@ type KeyValueEntry[T any] interface {
 
 // kve is a generic implementation of nats.KeyValueEntry.
 type kve[T any] struct {
-	// codec defines how to encode T.
-	codec Codec[T]
+	// encoder defines how to encode T.
+	encoder nats.Encoder
 	// value represents the decoded return value.
 	value atomic.Pointer[async.Result[T]]
 	// delegate is the underlying nats.KeyValueEntry returned from the nats library.
@@ -42,7 +42,7 @@ func (e *kve[T]) UnmarshalValue() (T, error) {
 	}
 
 	var value T
-	err := e.codec.Unmarshal(e.delegate.Value(), &value)
+	err := e.encoder.Decode("", e.delegate.Value(), &value)
 	result := async.NewResult[T](value, err)
 
 	// cache the result and return

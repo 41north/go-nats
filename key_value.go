@@ -6,8 +6,8 @@ import "github.com/nats-io/nats.go"
 type KeyValue[T any] interface {
 	// Delegate returns the underlying nats.KeyValue instance.
 	Delegate() nats.KeyValue
-	// Codec returns the codec used for marshalling to and from bytes.
-	Codec() Codec[T]
+	// Encoder returns the codec used for marshalling to and from bytes.
+	Encoder() nats.Encoder
 	// Get returns the latest value for the key.
 	Get(key string) (entry KeyValueEntry[T], err error)
 	// GetRevision returns a specific revision value for the key.
@@ -30,7 +30,7 @@ type KeyValue[T any] interface {
 }
 
 type kv[T any] struct {
-	codec    Codec[T]
+	encoder  nats.Encoder
 	delegate nats.KeyValue
 }
 
@@ -38,8 +38,8 @@ func (k *kv[T]) Delegate() nats.KeyValue {
 	return k.delegate
 }
 
-func (k *kv[T]) Codec() Codec[T] {
-	return k.codec
+func (k *kv[T]) Encoder() nats.Encoder {
+	return k.encoder
 }
 
 func (k *kv[T]) Get(key string) (entry KeyValueEntry[T], err error) {
@@ -47,7 +47,7 @@ func (k *kv[T]) Get(key string) (entry KeyValueEntry[T], err error) {
 	if err != nil {
 		return nil, err
 	}
-	return &kve[T]{delegate: delegate, codec: k.codec}, nil
+	return &kve[T]{delegate: delegate, encoder: k.encoder}, nil
 }
 
 func (k *kv[T]) GetRevision(key string, revision uint64) (entry KeyValueEntry[T], err error) {
@@ -55,11 +55,11 @@ func (k *kv[T]) GetRevision(key string, revision uint64) (entry KeyValueEntry[T]
 	if err != nil {
 		return nil, err
 	}
-	return &kve[T]{delegate: delegate, codec: k.codec}, nil
+	return &kve[T]{delegate: delegate, encoder: k.encoder}, nil
 }
 
 func (k *kv[T]) Put(key string, value T) (revision uint64, err error) {
-	bytes, err := k.codec.Marshal(value)
+	bytes, err := k.encoder.Encode("", value)
 	if err != nil {
 		return 0, err
 	}
@@ -67,7 +67,7 @@ func (k *kv[T]) Put(key string, value T) (revision uint64, err error) {
 }
 
 func (k *kv[T]) Create(key string, value T) (revision uint64, err error) {
-	bytes, err := k.codec.Marshal(value)
+	bytes, err := k.encoder.Encode("", value)
 	if err != nil {
 		return 0, err
 	}
@@ -75,7 +75,7 @@ func (k *kv[T]) Create(key string, value T) (revision uint64, err error) {
 }
 
 func (k *kv[T]) Update(key string, value T, last uint64) (revision uint64, err error) {
-	bytes, err := k.codec.Marshal(value)
+	bytes, err := k.encoder.Encode("", value)
 	if err != nil {
 		return 0, err
 	}
@@ -87,7 +87,7 @@ func (k *kv[T]) Watch(keys string, opts ...nats.WatchOpt) (KeyWatcher[T], error)
 	if err != nil {
 		return nil, err
 	}
-	return NewKeyWatcher[T](kw, k.codec), nil
+	return NewKeyWatcher[T](kw, k.encoder), nil
 }
 
 func (k *kv[T]) WatchAll(opts ...nats.WatchOpt) (KeyWatcher[T], error) {
@@ -95,7 +95,7 @@ func (k *kv[T]) WatchAll(opts ...nats.WatchOpt) (KeyWatcher[T], error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewKeyWatcher[T](kw, k.codec), nil
+	return NewKeyWatcher[T](kw, k.encoder), nil
 }
 
 func (k *kv[T]) History(key string, opts ...nats.WatchOpt) ([]KeyValueEntry[T], error) {
@@ -107,7 +107,7 @@ func (k *kv[T]) History(key string, opts ...nats.WatchOpt) ([]KeyValueEntry[T], 
 	// convert into typed entries
 	typedEntries := make([]KeyValueEntry[T], len(entries))
 	for idx, delegate := range entries {
-		typedEntries[idx] = &kve[T]{delegate: delegate, codec: k.codec}
+		typedEntries[idx] = &kve[T]{delegate: delegate, encoder: k.encoder}
 	}
 
 	return typedEntries, nil
@@ -117,6 +117,6 @@ func (k *kv[T]) Bucket() string {
 	return k.delegate.Bucket()
 }
 
-func NewKeyValue[T any](delegate nats.KeyValue, codec Codec[T]) KeyValue[T] {
-	return &kv[T]{delegate: delegate, codec: codec}
+func NewKeyValue[T any](delegate nats.KeyValue, encoder nats.Encoder) KeyValue[T] {
+	return &kv[T]{delegate: delegate, encoder: encoder}
 }
