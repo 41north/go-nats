@@ -1,4 +1,4 @@
-module github.com/41north/go-nats
+module github.com/41north/natsutil.go
 
 go 1.19
 
