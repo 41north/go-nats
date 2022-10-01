@@ -47,16 +47,18 @@ are not used:
 ```go
 sb := natsutil.SubjectBuilder{}
 
-sb.Add("foo", "bar", "baz")
+// 'foo.bar.baz.*'
+sb.Push("foo", "bar", "baz")
 sb.Star()
-
-// outputs 'foo.bar.baz.*'
 subject := sb.String()
 
-sb.Add("hello")
-sb.Chevron()
+// 'foo.bar'
+sb.Pop(2)
+subject = sb.String()
 
-// outputs 'foo.bar.baz.*.hello.>'
+// 'foo.bar.hello.>'
+sb.Push("hello")
+sb.Chevron()
 subject = sb.String()
 ```
 

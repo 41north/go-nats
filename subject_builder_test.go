@@ -6,28 +6,48 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSubjectBuilder_Add(t *testing.T) {
+func TestSubjectBuilder_PushPop(t *testing.T) {
 	sb := SubjectBuilder{}
 
 	assert.Equal(t, "", sb.String())
 
-	assert.Nil(t, sb.Add("foo"))
+	assert.Nil(t, sb.Push("foo"))
 	assert.Equal(t, "foo", sb.String())
 
-	assert.Nil(t, sb.Add("bar", "baz"))
+	assert.Nil(t, sb.Push("bar", "baz"))
 	assert.Equal(t, "foo.bar.baz", sb.String())
 
-	assert.Error(t, ErrSubjectInvalidCharacters, sb.Add("%"))
-	assert.Error(t, ErrSubjectInvalidCharacters, sb.Add("-"))
-	assert.Error(t, ErrSubjectInvalidCharacters, sb.Add("*"))
-	assert.Error(t, ErrSubjectInvalidCharacters, sb.Add(">"))
+	assert.Nil(t, sb.Pop(2))
+	assert.Equal(t, "foo", sb.String())
+
+	assert.Error(t, ErrPopInsufficientElements, sb.Pop(2))
 
 	sb.Star()
-	assert.Equal(t, "foo.bar.baz.*", sb.String())
+	assert.Equal(t, "foo.*", sb.String())
 
-	assert.Nil(t, sb.Add("hello"))
-	assert.Equal(t, "foo.bar.baz.*.hello", sb.String())
+	assert.Nil(t, sb.Push("hello"))
+	assert.Equal(t, "foo.*.hello", sb.String())
 
 	sb.Chevron()
-	assert.Equal(t, "foo.bar.baz.*.hello.>", sb.String())
+	assert.Equal(t, "foo.*.hello.>", sb.String())
+}
+
+func TestSubjectBuilder_InvalidCharacters(t *testing.T) {
+	sb := SubjectBuilder{}
+
+	assert.Nil(t, sb.Push("foo"))
+	assert.Nil(t, sb.Push("BAR"))
+	assert.Nil(t, sb.Push("hell0_wor1d"))
+
+	assert.Equal(t, "foo.BAR.hell0_wor1d", sb.String())
+
+	assert.Error(t, ErrSubjectInvalidCharacters, sb.Push("%"))
+	assert.Error(t, ErrSubjectInvalidCharacters, sb.Push("-"))
+	assert.Error(t, ErrSubjectInvalidCharacters, sb.Push("*"))
+	assert.Error(t, ErrSubjectInvalidCharacters, sb.Push(">"))
+	assert.Error(t, ErrSubjectInvalidCharacters, sb.Push("{"))
+	assert.Error(t, ErrSubjectInvalidCharacters, sb.Push("}"))
+	assert.Error(t, ErrSubjectInvalidCharacters, sb.Push("("))
+	assert.Error(t, ErrSubjectInvalidCharacters, sb.Push(")"))
+	assert.Error(t, ErrSubjectInvalidCharacters, sb.Push("+"))
 }
