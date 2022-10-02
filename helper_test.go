@@ -1,4 +1,4 @@
-package natsutil
+package natsutil_test
 
 import (
 	"os"
