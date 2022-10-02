@@ -1,7 +1,9 @@
-package natsutil
+package natsutil_test
 
 import (
 	"testing"
+
+	"github.com/41north/natsutil.go"
 
 	"github.com/nats-io/nats.go/encoders/builtin"
 
@@ -19,7 +21,7 @@ func TestNewKeyValue(t *testing.T) {
 	_, js := jsClient(t, s)
 	bucket := createTestBucket(t, js)
 
-	kv := NewKeyValue[string](bucket, &encoder)
+	kv := natsutil.NewKeyValue[string](bucket, &encoder)
 
 	assert.Equal(t, bucket.Bucket(), kv.Bucket())
 	assert.Equal(t, &encoder, kv.Encoder())
@@ -30,7 +32,7 @@ func TestKv_Put(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
+	kv := natsutil.NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
 
 	// insert some values
 	revision, err := kv.Put("foo", testPayload{1})
@@ -78,7 +80,7 @@ func TestKv_Create(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
+	kv := natsutil.NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
 
 	// create a value
 	revision, err := kv.Create("foo", testPayload{1})
@@ -95,7 +97,7 @@ func TestKv_Update(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
+	kv := natsutil.NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
 
 	// create a value
 	revision, err := kv.Create("foo", testPayload{1})
@@ -120,7 +122,7 @@ func TestKv_GetRevisionAndHistory(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
+	kv := natsutil.NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
 
 	// create some versions for a given key
 	revision, err := kv.Put("foo", testPayload{1})
@@ -174,7 +176,7 @@ func TestKv_Watch(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
+	kv := natsutil.NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
 
 	// create a watch on a specific key
 	w, err := kv.Watch("foo")
@@ -240,7 +242,7 @@ func TestKv_WatchAll(t *testing.T) {
 	defer shutdownJSServerAndRemoveStorage(t, s)
 
 	_, js := jsClient(t, s)
-	kv := NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
+	kv := natsutil.NewKeyValue[testPayload](createTestBucket(t, js), &encoder)
 
 	// create a watch on a specific key
 	w, err := kv.WatchAll()
