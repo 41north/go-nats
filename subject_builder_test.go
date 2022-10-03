@@ -16,13 +16,13 @@ func TestSubjectBuilder_PushPop(t *testing.T) {
 	assert.Nil(t, sb.Push("foo"))
 	assert.Equal(t, "foo", sb.String())
 
-	sb.MustPush("bar", "baz")
+	assert.Equal(t, &sb, sb.MustPush("bar", "baz"))
 	assert.Equal(t, "foo.bar.baz", sb.String())
 
 	assert.Nil(t, sb.Pop(1))
 	assert.Equal(t, "foo.bar", sb.String())
 
-	sb.MustPop(1)
+	assert.Equal(t, &sb, sb.MustPop(1))
 	assert.Equal(t, "foo", sb.String())
 
 	assert.Error(t, natsutil.ErrPopInsufficientElements, sb.Pop(2))

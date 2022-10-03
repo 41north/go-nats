@@ -38,10 +38,11 @@ func (b *SubjectBuilder) Push(elements ...string) error {
 }
 
 // MustPush is a variant of Push which panics if an error is returned.
-func (b *SubjectBuilder) MustPush(elements ...string) {
+func (b *SubjectBuilder) MustPush(elements ...string) *SubjectBuilder {
 	if err := b.Push(elements...); err != nil {
 		panic(err)
 	}
+	return b
 }
 
 // Pop removes a number of elements from the end of the subject currently under construction.
@@ -55,10 +56,11 @@ func (b *SubjectBuilder) Pop(count int) error {
 }
 
 // MustPop is a variant of Pop which panics if an error is returned.
-func (b *SubjectBuilder) MustPop(count int) {
+func (b *SubjectBuilder) MustPop(count int) *SubjectBuilder {
 	if err := b.Pop(count); err != nil {
 		panic(err)
 	}
+	return b
 }
 
 // Star appends a '*' wildcard to the subject under construction, prepending a separator as needed.
