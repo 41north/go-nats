@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	subjectSeparator = "."
-	star             = "*"
-	chevron          = ">"
+	SubjectSeparator = "."
+	SubjectStar      = "*"
+	SubjectChevron   = ">"
 )
 
 const (
@@ -37,6 +37,15 @@ func (b *SubjectBuilder) Push(elements ...string) error {
 	return nil
 }
 
+// MustPush is a variant of Push which panics if an error is returned.
+func (b *SubjectBuilder) MustPush(elements ...string) {
+	if err := b.Push(elements...); err != nil {
+		panic(err)
+	}
+}
+
+// Pop removes a number of elements from the end of the subject currently under construction.
+// Pop returns ErrPopInsufficientElements if you attempt to pop more elements than have been pushed.
 func (b *SubjectBuilder) Pop(count int) error {
 	if count > len(b.elements) {
 		return ErrPopInsufficientElements
@@ -45,14 +54,21 @@ func (b *SubjectBuilder) Pop(count int) error {
 	return nil
 }
 
+// MustPop is a variant of Pop which panics if an error is returned.
+func (b *SubjectBuilder) MustPop(count int) {
+	if err := b.Pop(count); err != nil {
+		panic(err)
+	}
+}
+
 // Star appends a '*' wildcard to the subject under construction, prepending a separator as needed.
 func (b *SubjectBuilder) Star() {
-	b.elements = append(b.elements, star)
+	b.elements = append(b.elements, SubjectStar)
 }
 
 // Chevron appends a '>' wildcard to the subject under construction, prepending a separator as needed.
 func (b *SubjectBuilder) Chevron() {
-	b.elements = append(b.elements, chevron)
+	b.elements = append(b.elements, SubjectChevron)
 }
 
 // String outputs the subject that has been constructed so far.
@@ -61,7 +77,7 @@ func (b *SubjectBuilder) String() string {
 	for idx, elem := range b.elements {
 		if idx > 0 {
 			// prepend a separator
-			sb.WriteString(subjectSeparator)
+			sb.WriteString(SubjectSeparator)
 		}
 		sb.WriteString(elem)
 	}
